@@ -1,12 +1,7 @@
 package app
 
-import (
-	"net/http"
+import "github.com/azharisikumbang/gohello/internal/domain/user"
 
-	"github.com/azharisikumbang/gohello/internal/domain/user/handlers"
-)
-
-func LoadRoutes(h *http.ServeMux) {
-	// domain/users
-	h.HandleFunc("GET /users", handlers.HomeHandler)
+func (app *Application) LoadRoutes() {
+	app.Get("/users", user.HomeHandler)
 }
