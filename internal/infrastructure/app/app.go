@@ -38,6 +38,8 @@ type DBConfig struct {
 func (app *Application) Run() {
 	log.Printf("Server running on port %s", app.Config.App.Port)
 
+	app.LoadRoutes()
+
 	err := http.ListenAndServe(fmt.Sprintf(":%s", app.Config.App.Port), app.Server)
 	if err != nil {
 		panic(err)
@@ -72,9 +74,7 @@ func NewDefault() *Application {
 		Port:     app.Config.DB.Port,
 	}
 
-	db := database.CreateDatabaseInstance(mysql)
-	app.DB = db.GetInstance()
-
+	app.DB = database.CreateDatabaseInstance(mysql).GetInstance()
 	app.Server = server.CreateHTTPServer()
 
 	return app
