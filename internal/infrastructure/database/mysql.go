@@ -14,14 +14,6 @@ var (
 	once sync.Once
 )
 
-type DatabaseInterface interface {
-	GetInstance() *sql.DB
-}
-
-func CreateDatabaseInstance(db DatabaseInterface) DatabaseInterface {
-	return db
-}
-
 type MySQL struct {
 	Host     string
 	Username string
@@ -49,4 +41,14 @@ func (m *MySQL) GetInstance() *sql.DB {
 	})
 
 	return db
+}
+
+func NewMySQL(host string, username string, password string, name string, port string) *MySQL {
+	return &MySQL{
+		Host:     host,
+		Username: username,
+		Password: password,
+		Name:     name,
+		Port:     port,
+	}
 }

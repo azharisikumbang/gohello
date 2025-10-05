@@ -7,43 +7,14 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/azharisikumbang/gohello/internal/infrastructure/database"
-	"github.com/azharisikumbang/gohello/internal/infrastructure/server"
 	"github.com/joho/godotenv"
 )
 
 type Application struct {
 	Config Config
-	DB     *sql.DB
+	Db     *sql.DB
 	Server *http.ServeMux
-}
-
-type Config struct {
-	App AppConfig
-	DB  DBConfig
-}
-
-type AppConfig struct {
-	Port string
-}
-
-type DBConfig struct {
-	Host     string
-	Username string
-	Password string
-	Name     string
-	Port     string
-}
-
-func (app *Application) Run() {
-	log.Printf("Server running on port %s", app.Config.App.Port)
-
-	app.LoadRoutes()
-
-	err := http.ListenAndServe(fmt.Sprintf(":%s", app.Config.App.Port), app.Server)
-	if err != nil {
-		panic(err)
-	}
+	Router RouterInterface
 }
 
 func NewDefault() *Application {
@@ -51,7 +22,7 @@ func NewDefault() *Application {
 		log.Fatal("Error loading .env file")
 	}
 
-	app := &Application{
+	a := &Application{
 		Config: Config{
 			App: AppConfig{
 				Port: os.Getenv("APP_PORT"),
@@ -62,34 +33,50 @@ func NewDefault() *Application {
 				Password: os.Getenv("DB_PASS"),
 				Name:     os.Getenv("DB_NAME"),
 				Port:     os.Getenv("DB_PORT"),
+				Driver:   os.Getenv("DB_DRIVER"),
 			},
 		},
 	}
 
-	var mysql *database.MySQL = &database.MySQL{
-		Host:     app.Config.DB.Host,
-		Username: app.Config.DB.Username,
-		Password: app.Config.DB.Password,
-		Name:     app.Config.DB.Name,
-		Port:     app.Config.DB.Port,
+	a.UseHTTPServer()
+	a.UseDatabase()
+	a.UseRouter()
+
+	return a
+}
+
+func (a *Application) Run() {
+	log.Printf("Server running on port %s", a.Config.App.Port)
+
+	defer a.Db.Close()
+
+	a.LoadRoutes()
+
+	err := http.ListenAndServe(fmt.Sprintf(":%s", a.Config.App.Port), a.Server)
+	if err != nil {
+		panic(err)
 	}
-
-	app.DB = database.CreateDatabaseInstance(mysql).GetInstance()
-	app.Server = server.CreateHTTPServer()
-
-	return app
 }
 
-func (app *Application) Get(path string, handler func(http.ResponseWriter, *http.Request)) {
-	newPath := fmt.Sprintf("GET %s", path)
-	app.Server.HandleFunc(newPath, handler)
+func (a *Application) UseRouter() {
+	a.Router = NewRouter()
 }
 
-func (app *Application) Post(path string, handler func(http.ResponseWriter, *http.Request)) {
-	newPath := fmt.Sprintf("POST %s", path)
-	app.Server.HandleFunc(newPath, handler)
+func (a *Application) LoadRoutes() {
+	for _, r := range a.Router.GetRoutes() {
+		newPath := fmt.Sprintf("%s %s", r.GetMethod(), r.GetPath())
+		a.Server.HandleFunc(newPath, r.GetHandler())
+	}
 }
 
-func (app *Application) AddDBContext(db *sql.DB) {
-	app.DB = db
+func (a *Application) UseDatabase() {
+	a.Db = NewDatabase(a.Config.DB).GetInstance()
+}
+
+func (a *Application) UseHTTPServer() {
+	a.Server = NewHTTPServer().GetInstance()
+}
+
+func (a *Application) AddFeature(f FeatureInterface) {
+	f.Boot(a)
 }

@@ -1,7 +1,15 @@
 package server
 
-import "net/http"
+import (
+	"net/http"
+)
 
-func CreateHTTPServer() *http.ServeMux {
+type HTTPServer struct{}
+
+func NewHTTPServer() *HTTPServer {
+	return &HTTPServer{}
+}
+
+func (s *HTTPServer) GetInstance() *http.ServeMux {
 	return http.NewServeMux()
 }
