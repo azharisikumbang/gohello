@@ -65,7 +65,13 @@ func (a *Application) UseRouter() {
 func (a *Application) LoadRoutes() {
 	for _, r := range a.Router.GetRoutes() {
 		newPath := fmt.Sprintf("%s %s", r.GetMethod(), r.GetPath())
-		a.Server.HandleFunc(newPath, r.GetHandler())
+		handler := r.GetHandler()
+
+		for _, m := range r.GetMiddlewares() {
+			handler = m.RunMiddleware(handler)
+		}
+
+		a.Server.HandleFunc(newPath, handler)
 	}
 }
 

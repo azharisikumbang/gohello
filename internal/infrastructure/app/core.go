@@ -5,19 +5,24 @@ import (
 	"net/http"
 )
 
+type MiddlewareInterface interface {
+	RunMiddleware(next http.Handler) http.HandlerFunc
+}
+
 type RouteInterface interface {
 	GetMethod() string
 	GetPath() string
 	GetHandler() http.HandlerFunc
+	GetMiddlewares() []MiddlewareInterface
 }
 
 type RouterInterface interface {
 	GetRoutes() []RouteInterface
-	Get(path string, handler func(http.ResponseWriter, *http.Request))
-	Post(path string, handler func(http.ResponseWriter, *http.Request))
-	Put(path string, handler func(http.ResponseWriter, *http.Request))
-	Patch(path string, handler func(http.ResponseWriter, *http.Request))
-	Delete(path string, handler func(http.ResponseWriter, *http.Request))
+	Get(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface)
+	Post(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface)
+	Put(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface)
+	Patch(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface)
+	Delete(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface)
 }
 
 type FeatureInterface interface {

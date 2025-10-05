@@ -5,16 +5,18 @@ import (
 )
 
 type Route struct {
-	method  string
-	path    string
-	handler http.HandlerFunc
+	method      string
+	path        string
+	handler     http.HandlerFunc
+	middlewares []MiddlewareInterface
 }
 
-func NewRoute(method string, path string, handler func(http.ResponseWriter, *http.Request)) RouteInterface {
+func NewRoute(method string, path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface) RouteInterface {
 	return &Route{
-		method:  method,
-		path:    path,
-		handler: handler,
+		method:      method,
+		path:        path,
+		handler:     handler,
+		middlewares: ms,
 	}
 }
 
@@ -30,6 +32,10 @@ func (r *Route) GetHandler() http.HandlerFunc {
 	return r.handler
 }
 
+func (r *Route) GetMiddlewares() []MiddlewareInterface {
+	return r.middlewares
+}
+
 type Router struct {
 	Routes []RouteInterface
 }
@@ -42,31 +48,30 @@ func (r *Router) GetRoutes() []RouteInterface {
 	return r.Routes
 }
 
-func (r *Router) Get(path string, handler func(http.ResponseWriter, *http.Request)) {
-	route := NewRoute("GET", path, handler)
+func (r *Router) Get(
+	path string,
+	handler func(http.ResponseWriter, *http.Request),
+	ms []MiddlewareInterface) {
+	route := NewRoute("GET", path, handler, ms)
 	r.Routes = append(r.Routes, route)
 }
 
-func (r *Router) Post(path string, handler func(http.ResponseWriter, *http.Request)) {
-	route := NewRoute("POST", path, handler)
-
+func (r *Router) Post(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface) {
+	route := NewRoute("POST", path, handler, ms)
 	r.Routes = append(r.Routes, route)
 }
 
-func (r *Router) Put(path string, handler func(http.ResponseWriter, *http.Request)) {
-	route := NewRoute("PUT", path, handler)
-
+func (r *Router) Put(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface) {
+	route := NewRoute("PUT", path, handler, ms)
 	r.Routes = append(r.Routes, route)
 }
 
-func (r *Router) Patch(path string, handler func(http.ResponseWriter, *http.Request)) {
-	route := NewRoute("PATCH", path, handler)
-
+func (r *Router) Patch(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface) {
+	route := NewRoute("PATCH", path, handler, ms)
 	r.Routes = append(r.Routes, route)
 }
 
-func (r *Router) Delete(path string, handler func(http.ResponseWriter, *http.Request)) {
-	route := NewRoute("DELETE", path, handler)
-
+func (r *Router) Delete(path string, handler func(http.ResponseWriter, *http.Request), ms []MiddlewareInterface) {
+	route := NewRoute("DELETE", path, handler, ms)
 	r.Routes = append(r.Routes, route)
 }
