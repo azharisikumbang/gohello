@@ -1,19 +1,19 @@
-package user_managememnt
+package domain
 
 type User struct {
 	Id       int
 	Username string
 }
 
-type IUserRepository interface {
+type UserRepository interface {
 	All() ([]User, error)
 }
 
 type UserService struct {
-	Repo IUserRepository
+	Repo UserRepository
 }
 
-func NewUserService(r IUserRepository) *UserService {
+func NewUserService(r UserRepository) *UserService {
 	return &UserService{
 		Repo: r,
 	}

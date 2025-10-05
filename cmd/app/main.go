@@ -1,15 +1,7 @@
 package main
 
-import (
-	"github.com/azharisikumbang/gohello/internal/features"
-	"github.com/azharisikumbang/gohello/internal/infrastructure/app"
-)
+import kernel "github.com/azharisikumbang/gohello/internal"
 
 func main() {
-
-	a := app.NewDefault()
-
-	a.AddFeature(features.NewUserFeature())
-
-	a.Run()
+	kernel.NewApp().Run()
 }

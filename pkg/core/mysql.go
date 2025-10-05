@@ -1,4 +1,4 @@
-package database
+package core
 
 import (
 	"database/sql"
@@ -43,12 +43,12 @@ func (m *MySQL) GetInstance() *sql.DB {
 	return db
 }
 
-func NewMySQL(host string, username string, password string, name string, port string) *MySQL {
+func NewMySQL(cfg DBConfig) *MySQL {
 	return &MySQL{
-		Host:     host,
-		Username: username,
-		Password: password,
-		Name:     name,
-		Port:     port,
+		Host:     cfg.Host,
+		Username: cfg.Username,
+		Password: cfg.Password,
+		Name:     cfg.Name,
+		Port:     cfg.Port,
 	}
 }

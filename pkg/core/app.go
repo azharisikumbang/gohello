@@ -1,4 +1,4 @@
-package app
+package core
 
 import (
 	"database/sql"
@@ -11,10 +11,11 @@ import (
 )
 
 type Application struct {
-	Config Config
-	Db     *sql.DB
-	Server *http.ServeMux
-	Router RouterInterface
+	Config   Config
+	Db       *sql.DB
+	Server   *http.ServeMux
+	Router   RouterInterface
+	Features []FeatureInterface
 }
 
 func NewDefault() *Application {
@@ -38,10 +39,6 @@ func NewDefault() *Application {
 		},
 	}
 
-	a.UseHTTPServer()
-	a.UseDatabase()
-	a.UseRouter()
-
 	return a
 }
 
@@ -50,6 +47,7 @@ func (a *Application) Run() {
 
 	defer a.Db.Close()
 
+	a.LoadFeatures()
 	a.LoadRoutes()
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", a.Config.App.Port), a.Server)
@@ -58,31 +56,38 @@ func (a *Application) Run() {
 	}
 }
 
-func (a *Application) UseRouter() {
-	a.Router = NewRouter()
+func (a *Application) UseRouter(r RouterInterface) {
+	a.Router = r
 }
 
 func (a *Application) LoadRoutes() {
 	for _, r := range a.Router.GetRoutes() {
 		newPath := fmt.Sprintf("%s %s", r.GetMethod(), r.GetPath())
+		fmt.Println(newPath)
 		handler := r.GetHandler()
 
 		for _, m := range r.GetMiddlewares() {
 			handler = m.RunMiddleware(handler)
 		}
 
-		a.Server.HandleFunc(newPath, handler)
+		a.Server.HandleFunc(newPath, r.GetHandler())
 	}
 }
 
-func (a *Application) UseDatabase() {
-	a.Db = NewDatabase(a.Config.DB).GetInstance()
+func (a *Application) UseDatabase(db DatabaseInterface) {
+	a.Db = db.GetInstance()
 }
 
-func (a *Application) UseHTTPServer() {
-	a.Server = NewHTTPServer().GetInstance()
+func (a *Application) UseHTTPServer(h HTTPServerInterface) {
+	a.Server = h.GetInstance()
 }
 
 func (a *Application) AddFeature(f FeatureInterface) {
-	f.Boot(a)
+	a.Features = append(a.Features, f)
+}
+
+func (a *Application) LoadFeatures() {
+	for _, f := range a.Features {
+		f.Boot(a)
+	}
 }
