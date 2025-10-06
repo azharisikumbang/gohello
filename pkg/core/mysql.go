@@ -12,6 +12,7 @@ import (
 var (
 	db   *sql.DB
 	once sync.Once
+	err  error
 )
 
 type MySQL struct {
@@ -26,7 +27,7 @@ func (m *MySQL) GetInstance() *sql.DB {
 	once.Do(func() {
 		dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", m.Username, m.Password, m.Host, m.Port, m.Name)
 
-		db, err := sql.Open("mysql", dsn)
+		db, err = sql.Open("mysql", dsn)
 		if err != nil {
 			panic(err)
 		}

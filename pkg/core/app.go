@@ -63,22 +63,29 @@ func (a *Application) UseRouter(r RouterInterface) {
 func (a *Application) LoadRoutes() {
 	for _, r := range a.Router.GetRoutes() {
 		newPath := fmt.Sprintf("%s %s", r.GetMethod(), r.GetPath())
-		fmt.Println(newPath)
 		handler := r.GetHandler()
 
 		for _, m := range r.GetMiddlewares() {
 			handler = m.RunMiddleware(handler)
 		}
 
-		a.Server.HandleFunc(newPath, r.GetHandler())
+		a.Server.HandleFunc(newPath, handler)
 	}
 }
 
 func (a *Application) UseDatabase(db DatabaseInterface) {
+	if db.GetInstance() == nil {
+		panic("Error: Database intance return nil.")
+	}
+
 	a.Db = db.GetInstance()
 }
 
 func (a *Application) UseHTTPServer(h HTTPServerInterface) {
+	if h.GetInstance() == nil {
+		panic("Error: HTTP Server instance return nil.")
+	}
+
 	a.Server = h.GetInstance()
 }
 
