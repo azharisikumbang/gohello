@@ -1,7 +1,7 @@
 package http
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
 	"github.com/azharisikumbang/gohello/internal/user/domain"
@@ -18,5 +18,19 @@ func NewUserHandler(s *domain.UserService) *UserHandler {
 }
 
 func (h *UserHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello from user page 2")
+	users, err := h.service.Repo.All()
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	reponsesData, err := json.Marshal(users)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(reponsesData)
 }
