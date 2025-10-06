@@ -1,10 +1,11 @@
 package http
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/azharisikumbang/gohello/internal/user/domain"
+	request "github.com/azharisikumbang/gohello/internal/user/http/requests"
+	"github.com/azharisikumbang/gohello/pkg/helper"
 )
 
 type UserHandler struct {
@@ -25,12 +26,13 @@ func (h *UserHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reponsesData, err := json.Marshal(users)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	respData := helper.NewStdReponse(users, nil)
+	helper.ToJson(respData, w, http.StatusOK)
+}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(reponsesData)
+func (h *UserHandler) PostUserHandler(w http.ResponseWriter, r *http.Request) {
+
+	req := request.NewCreateRegistrationReq(r)
+	h.service.RegisterNewAccount(req)
+
 }
