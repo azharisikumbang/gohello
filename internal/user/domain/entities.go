@@ -1,9 +1,11 @@
 package domain
 
-type User struct {
-	Id       int    `json:"id"`
-	Username string `json:"username"`
-}
+import "time"
 
-type Person struct {
+type User struct {
+	Id          int
+	Username    string
+	Password    string
+	UserGroupId string
+	CreatedAt   *time.Time
 }

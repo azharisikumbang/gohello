@@ -42,5 +42,24 @@ func (r *MySQLUserRepository) All() ([]domain.User, error) {
 	}
 
 	return users, nil
+}
 
+func (r *MySQLUserRepository) FindByUsername(username string) (*domain.User, error) {
+	var user domain.User
+
+	row := r.DB.QueryRow("SELECT id, username, password, user_group_id, created_at from users where username = ?", username)
+
+	err := row.Scan(&user.Id, &user.Username, &user.Password, &user.UserGroupId, &user.CreatedAt)
+	if err != nil {
+		return nil, row.Err()
+	}
+
+	return &user, nil
+}
+
+func (r *MySQLUserRepository) UpdatePassword(username string, password string) bool {
+	q := string("update users set password = ? where username = ?")
+	_, err := r.DB.Exec(q, password, username)
+
+	return err != nil
 }

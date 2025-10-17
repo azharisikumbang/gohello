@@ -1,9 +1,16 @@
 package domain
 
-import request "github.com/azharisikumbang/gohello/internal/user/http/requests"
+import (
+	"log"
+
+	request "github.com/azharisikumbang/gohello/internal/user/http/requests"
+	"golang.org/x/crypto/bcrypt"
+)
 
 type UserRepository interface {
 	All() ([]User, error)
+	FindByUsername(u string) (*User, error)
+	UpdatePassword(u string, p string) bool
 }
 
 type UserService struct {
@@ -23,4 +30,24 @@ func (s *UserService) All() ([]User, error) {
 func (s *UserService) RegisterNewAccount(r *request.CreateRegistrationReq) {
 	// create user account
 	// create
+}
+
+func (s *UserService) AuthenticateUser(username string, password string) bool {
+	user, err := s.Repo.FindByUsername(username)
+
+	if err != nil || user == nil {
+		return false
+	}
+
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		log.Printf("Error : %s", err.Error())
+
+		return false
+	}
+
+	return true
+}
+
+func (s *UserService) CreateLoginToken(username string) string {
+	return "this is valid token"
 }

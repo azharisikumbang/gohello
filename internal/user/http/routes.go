@@ -14,6 +14,8 @@ func Routes(r core.RouterInterface, db *sql.DB) {
 	serv := domain.NewUserService(repo)
 	h := NewUserHandler(serv)
 
+	r.Post("/login", h.PostLoginHandler, nil)
+
 	r.Get("/users", h.GetUsersHandler, Middlewares())
 	r.Post("/users", h.GetUsersHandler, Middlewares())
 }
