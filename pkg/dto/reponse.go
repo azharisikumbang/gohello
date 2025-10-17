@@ -9,5 +9,5 @@ type Pagination struct {
 type StdReponse struct {
 	Data       any        `json:"data"`
 	Pagination Pagination `json:"links"`
-	Errors     []error    `json:"errors"`
+	Errors     []string   `json:"errors"`
 }
