@@ -8,10 +8,15 @@ import (
 )
 
 func NewStdReponse(data any, error []error) *dto.StdReponse {
+	strErrors := make([]string, len(error))
+	for i, e := range error {
+		strErrors[i] = e.Error()
+	}
+
 	return &dto.StdReponse{
 		Data:       data,
 		Pagination: dto.Pagination{},
-		Errors:     error,
+		Errors:     strErrors,
 	}
 }
 
