@@ -17,7 +17,7 @@ func Routes(r core.RouterInterface, db *sql.DB, cfg core.AppConfig) {
 	r.Post("/login", h.PostLoginHandler, nil)
 
 	r.Get("/users", h.GetUsersHandler, Middlewares())
-	r.Post("/users", h.GetUsersHandler, Middlewares())
+	r.Post("/users", h.PostUserHandler, nil)
 }
 
 func Middlewares() []core.MiddlewareInterface {

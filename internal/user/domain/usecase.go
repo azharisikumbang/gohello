@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"log"
 	"strconv"
 	"time"
@@ -15,6 +16,7 @@ type UserRepository interface {
 	All() ([]User, error)
 	FindByUsername(u string) (*User, error)
 	UpdatePassword(u string, p string) bool
+	Save(u *User) error
 }
 
 type UserService struct {
@@ -33,9 +35,25 @@ func (s *UserService) All() ([]User, error) {
 	return s.Repo.All()
 }
 
-func (s *UserService) RegisterNewAccount(r *request.CreateRegistrationReq) {
+func (s *UserService) RegisterNewAccount(r *request.RegistrationRequest) error {
 	// create user account
-	// create
+
+	exists, _ := s.Repo.FindByUsername(r.Username)
+	if exists != nil {
+		return errors.New("username already registered")
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(r.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("failed to create user")
+	}
+
+	var user *User = &User{
+		Username: r.Username,
+		Password: string(hashed),
+	}
+
+	return s.Repo.Save(user)
 }
 
 func (s *UserService) AuthenticateUser(username string, password string) bool {

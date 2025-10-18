@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/azharisikumbang/gohello/internal/user/domain"
@@ -34,9 +35,21 @@ func (h *UserHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) PostUserHandler(w http.ResponseWriter, r *http.Request) {
 
-	req := request.NewCreateRegistrationReq(r)
-	h.service.RegisterNewAccount(req)
+	req := request.NewRegistrationRequest(r)
+	err := req.Validate()
+	if err != nil {
+		fmt.Println(err)
+		// helper.NewErrorJsonReponse(w, err, http.StatusBadRequest)
+		return
+	}
 
+	err2 := h.service.RegisterNewAccount(req)
+	if err2 != nil {
+		helper.NewErrorJsonReponse(w, []error{err2}, http.StatusBadGateway)
+		return
+	}
+
+	helper.NewOkJsonReponse(w, "user created.", http.StatusOK)
 }
 
 func (h *UserHandler) PostLoginHandler(w http.ResponseWriter, r *http.Request) {

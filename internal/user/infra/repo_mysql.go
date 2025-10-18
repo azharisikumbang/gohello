@@ -2,6 +2,7 @@ package infra
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	"github.com/azharisikumbang/gohello/internal/user/domain"
@@ -55,6 +56,18 @@ func (r *MySQLUserRepository) FindByUsername(username string) (*domain.User, err
 	}
 
 	return &user, nil
+}
+
+func (r *MySQLUserRepository) Save(u *domain.User) error {
+	q := "INSERT INTO users (username, password) VALUES (?, ?)"
+
+	_, err := r.DB.Exec(q, u.Username, u.Password)
+
+	if err != nil {
+		return errors.New("server error. Failed to create data, please contact the administrator")
+	}
+
+	return nil
 }
 
 func (r *MySQLUserRepository) UpdatePassword(username string, password string) bool {
