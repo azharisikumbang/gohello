@@ -7,6 +7,7 @@ type Config struct {
 
 type AppConfig struct {
 	Port string
+	Key  string
 }
 
 type DBConfig struct {

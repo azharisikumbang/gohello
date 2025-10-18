@@ -27,6 +27,7 @@ func NewDefault() *Application {
 		Config: Config{
 			App: AppConfig{
 				Port: os.Getenv("APP_PORT"),
+				Key:  os.Getenv("APP_KEY"),
 			},
 			DB: DBConfig{
 				Host:     os.Getenv("DB_HOST"),
