@@ -12,5 +12,5 @@ func NewUserFeature() *UserFeature {
 }
 
 func (f *UserFeature) Boot(a *core.Application) {
-	http.Routes(a.Router, a.Db)
+	http.Routes(a.Router, a.Db, a.Config.App)
 }

@@ -8,10 +8,10 @@ import (
 	"github.com/azharisikumbang/gohello/pkg/core"
 )
 
-func Routes(r core.RouterInterface, db *sql.DB) {
+func Routes(r core.RouterInterface, db *sql.DB, cfg core.AppConfig) {
 
 	repo := infra.NewMySQLUserRepository(db)
-	serv := domain.NewUserService(repo)
+	serv := domain.NewUserService(repo, cfg)
 	h := NewUserHandler(serv)
 
 	r.Post("/login", h.PostLoginHandler, nil)

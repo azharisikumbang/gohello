@@ -2,7 +2,6 @@ package http
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/azharisikumbang/gohello/internal/user/domain"
@@ -41,20 +40,18 @@ func (h *UserHandler) PostUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) PostLoginHandler(w http.ResponseWriter, r *http.Request) {
-
 	req := request.NewLoginRequest(r)
 
 	if !h.service.AuthenticateUser(req.Username, req.Password) {
-		respData := helper.NewStdReponse(nil, []error{errors.New("invalid credentials")})
-
-		helper.ToJson(respData, w, http.StatusUnauthorized)
+		helper.NewErrorJsonReponse(w, []error{errors.New("invalid credentials")}, http.StatusUnauthorized)
 		return
 	}
 
-	token := h.service.CreateLoginToken(req.Username)
+	token, err := h.service.CreateLoginToken(req.Username)
+	if err != nil || token == "" {
+		helper.NewErrorJsonReponse(w, []error{errors.New("invalid credentials")}, http.StatusUnauthorized)
+		return
+	}
 
-	fmt.Println(token)
-
-	respData := helper.NewStdReponse(response.NewValidLoginReponse(token), nil)
-	helper.ToJson(respData, w, http.StatusOK)
+	helper.NewOkJsonReponse(w, response.NewValidLoginReponse(token), http.StatusOK)
 }

@@ -20,6 +20,21 @@ func NewStdReponse(data any, error []error) *dto.StdReponse {
 	}
 }
 
+func NewErrorJsonReponse(w http.ResponseWriter, errors []error, code int) {
+	resp := NewStdReponse(nil, errors)
+	ToJson(resp, w, code)
+}
+
+func NewOkJsonReponse(w http.ResponseWriter, data any, code int) {
+	resp := &dto.StdReponse{
+		Data:       data,
+		Pagination: dto.Pagination{},
+		Errors:     nil,
+	}
+
+	ToJson(resp, w, code)
+}
+
 func ToJson(data any, w http.ResponseWriter, code int) {
 	newData, err := json.Marshal(data)
 	if err != nil {
