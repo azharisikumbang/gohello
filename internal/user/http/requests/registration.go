@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/azharisikumbang/gohello/pkg/dto"
+	"github.com/azharisikumbang/gohello/pkg/helper"
 )
 
 type RegistrationRequest struct {
@@ -23,23 +26,23 @@ func NewRegistrationRequest(r *http.Request) *RegistrationRequest {
 	return &data
 }
 
-func (r *RegistrationRequest) Validate() []map[string]interface{} {
-	var e []map[string]interface{} = nil
+func (r *RegistrationRequest) Validate() []dto.ErrValue {
+	var e []dto.ErrValue
 
 	if r.Name == "" {
-		e = append(e, map[string]interface{}{"name": "field name is required."})
+		e = append(e, helper.NewErrValue("name", "field name is required"))
 	}
 
 	if r.Username == "" {
-		e = append(e, map[string]interface{}{"username": "field username is required."})
+		e = append(e, helper.NewErrValue("username", "field username is required"))
 	}
 
 	if r.Password == "" {
-		e = append(e, map[string]interface{}{"password": "field password is required."})
+		e = append(e, helper.NewErrValue("password", "field password is required"))
 	}
 
 	if r.PasswordConf != r.Password {
-		e = append(e, map[string]interface{}{"password_confirmation": "Password confirmation not match."})
+		e = append(e, helper.NewErrValue("password_confirmation", "password and password confirmation is not match"))
 	}
 
 	return e

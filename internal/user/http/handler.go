@@ -1,13 +1,12 @@
 package http
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/azharisikumbang/gohello/internal/user/domain"
 	request "github.com/azharisikumbang/gohello/internal/user/http/requests"
 	response "github.com/azharisikumbang/gohello/internal/user/http/responses"
+	"github.com/azharisikumbang/gohello/pkg/dto"
 	"github.com/azharisikumbang/gohello/pkg/helper"
 )
 
@@ -36,16 +35,17 @@ func (h *UserHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) PostUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	req := request.NewRegistrationRequest(r)
-	err := req.Validate()
-	if err != nil {
-		fmt.Println(err)
-		// helper.NewErrorJsonReponse(w, err, http.StatusBadRequest)
+	errs := req.Validate()
+	if errs != nil {
+		helper.NewErrorJsonReponse(w, errs, 400)
+
 		return
 	}
 
-	err2 := h.service.RegisterNewAccount(req)
-	if err2 != nil {
-		helper.NewErrorJsonReponse(w, []error{err2}, http.StatusBadGateway)
+	err := h.service.RegisterNewAccount(req)
+	if err != nil {
+		erv := helper.NewErrValue("create_error", err.Error())
+		helper.NewErrorJsonReponse(w, []dto.ErrValue{erv}, http.StatusBadRequest)
 		return
 	}
 
@@ -56,13 +56,15 @@ func (h *UserHandler) PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 	req := request.NewLoginRequest(r)
 
 	if !h.service.AuthenticateUser(req.Username, req.Password) {
-		helper.NewErrorJsonReponse(w, []error{errors.New("invalid credentials")}, http.StatusUnauthorized)
+		erv := helper.NewErrValue("login", "invalid credentials")
+		helper.NewErrorJsonReponse(w, []dto.ErrValue{erv}, http.StatusUnauthorized)
 		return
 	}
 
 	token, err := h.service.CreateLoginToken(req.Username)
 	if err != nil || token == "" {
-		helper.NewErrorJsonReponse(w, []error{errors.New("invalid credentials")}, http.StatusUnauthorized)
+		erv := helper.NewErrValue("login", "invalid credentials")
+		helper.NewErrorJsonReponse(w, []dto.ErrValue{erv}, http.StatusUnauthorized)
 		return
 	}
 
