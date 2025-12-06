@@ -20,7 +20,7 @@ type DataResponse struct {
 
 // error repsonse
 type ErrValue struct {
-	Key   string `json:"key"`
+	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
@@ -38,8 +38,11 @@ func NewErrorResponse() *ErrResponse {
 	}
 }
 
-func (e *ErrResponse) AddErrValue(i ErrValue) *ErrResponse {
-	e.Errors = append(e.Errors, i)
+func (e *ErrResponse) AddErrValue(i ErrValueInterface) *ErrResponse {
+	e.Errors = append(e.Errors, ErrValue{
+		Name:  i.ErrorName(),
+		Value: i.ErrorValue(),
+	})
 
 	return e
 }

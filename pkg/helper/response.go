@@ -7,7 +7,7 @@ import (
 	"github.com/azharisikumbang/gohello/pkg/dto"
 )
 
-func NewStdReponse(data any, error []error) *dto.StdResponse {
+func NewStdResponse(data any, error []error) *dto.StdResponse {
 	strErrors := make([]string, len(error))
 	for i, e := range error {
 		strErrors[i] = e.Error()
@@ -20,41 +20,47 @@ func NewStdReponse(data any, error []error) *dto.StdResponse {
 	}
 }
 
-func NewErrorJsonReponse(w http.ResponseWriter, ers []dto.ErrValue, code int) {
+func NewBadRequestJsonResponse(w http.ResponseWriter, errs []dto.FormError) {
 	resp := dto.NewErrorResponse()
 
-	for _, e := range ers {
-		resp.AddErrValue(e)
+	for _, e := range errs {
+		resp.AddErrValue(&e)
 	}
 
-	ToJson(resp, w, code)
+	WriteJson(w, http.StatusBadRequest, resp)
 }
 
-func NewOkJsonReponse(w http.ResponseWriter, data any, code int) {
+func NewServerErrorJsonResponse(w http.ResponseWriter, e error) {
+	resp := dto.NewErrorResponse()
+	erv := NewServerError("server_error", e, "Internal server error")
+	resp.AddErrValue(&erv)
+
+	WriteJson(w, http.StatusInternalServerError, resp)
+}
+
+func NewOKJSONReponse(w http.ResponseWriter, data any, code int) {
 	resp := &dto.StdResponse{
 		Data:       data,
 		Pagination: dto.Pagination{},
 		Errors:     nil,
 	}
 
-	ToJson(resp, w, code)
+	WriteJson(w, code, resp)
 }
 
-func ToJson(data any, w http.ResponseWriter, code int) {
-	newData, err := json.Marshal(data)
+func WriteJson(w http.ResponseWriter, code int, data any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(newData)
 }
 
-func NewErrValue(key string, val string) dto.ErrValue {
+func NewErrValue(name string, value string) dto.ErrValue {
 	return dto.ErrValue{
-		Key:   key,
-		Value: val,
+		Name:  name,
+		Value: value,
 	}
 }
