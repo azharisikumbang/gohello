@@ -5,6 +5,38 @@ import (
 	"net/http"
 )
 
+type ApplicationInterface interface {
+	GetHTTPServer() HTTPServerInterface
+	UseHTTPServer(HTTPServerInterface)
+	GetRouter() RouterInterface
+	UseRouter(RouterInterface)
+	GetDatabase() DatabaseInterface
+	UseDatabase(DatabaseInterface)
+	GetLogger()
+	GetConfig() Config
+	AddFeature(FeatureInterface)
+	Run()
+}
+
+type Config struct {
+	App AppConfig
+	DB  DBConfig
+}
+
+type AppConfig struct {
+	Port string
+	Key  string
+}
+
+type DBConfig struct {
+	Host     string
+	Username string
+	Password string
+	Name     string
+	Port     string
+	Driver   string
+}
+
 type MiddlewareInterface interface {
 	RunMiddleware(next http.Handler) http.HandlerFunc
 }
@@ -26,7 +58,7 @@ type RouterInterface interface {
 }
 
 type FeatureInterface interface {
-	Boot(a *Application)
+	Boot(a ApplicationInterface)
 }
 
 type DatabaseInterface interface {
@@ -35,4 +67,5 @@ type DatabaseInterface interface {
 
 type HTTPServerInterface interface {
 	GetInstance() *http.ServeMux
+	UseInstance(*http.ServeMux)
 }

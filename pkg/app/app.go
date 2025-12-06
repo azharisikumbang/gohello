@@ -1,35 +1,54 @@
-package core
+package app
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	core "github.com/azharisikumbang/gohello/internal"
 	"github.com/joho/godotenv"
 )
 
 type Application struct {
-	Config   Config
-	Db       *sql.DB
-	Server   *http.ServeMux
-	Router   RouterInterface
-	Features []FeatureInterface
+	Config   core.Config
+	Db       core.DatabaseInterface
+	Server   core.HTTPServerInterface
+	Router   core.RouterInterface
+	Features []core.FeatureInterface
 }
 
-func NewDefault() *Application {
+func (a *Application) GetHTTPServer() core.HTTPServerInterface {
+	return a.Server
+}
+
+func (a *Application) GetRouter() core.RouterInterface {
+	return a.Router
+}
+
+func (a *Application) GetDatabase() core.DatabaseInterface {
+	return a.Db
+}
+
+func (a *Application) GetLogger() {
+}
+
+func (a *Application) GetConfig() core.Config {
+	return a.Config
+}
+
+func NewDefault() core.ApplicationInterface {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	a := &Application{
-		Config: Config{
-			App: AppConfig{
+	return &Application{
+		Config: core.Config{
+			App: core.AppConfig{
 				Port: os.Getenv("APP_PORT"),
 				Key:  os.Getenv("APP_KEY"),
 			},
-			DB: DBConfig{
+			DB: core.DBConfig{
 				Host:     os.Getenv("DB_HOST"),
 				Username: os.Getenv("DB_USER"),
 				Password: os.Getenv("DB_PASS"),
@@ -39,29 +58,28 @@ func NewDefault() *Application {
 			},
 		},
 	}
-
-	return a
 }
 
 func (a *Application) Run() {
 	log.Printf("Server running on port %s", a.Config.App.Port)
 
-	defer a.Db.Close()
+	defer a.Db.GetInstance().Close()
 
 	a.LoadFeatures()
 	a.LoadRoutes()
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", a.Config.App.Port), a.Server)
+	err := http.ListenAndServe(fmt.Sprintf(":%s", a.Config.App.Port), a.Server.GetInstance())
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (a *Application) UseRouter(r RouterInterface) {
+func (a *Application) UseRouter(r core.RouterInterface) {
 	a.Router = r
 }
 
 func (a *Application) LoadRoutes() {
+	mux := a.Server.GetInstance()
 	for _, r := range a.Router.GetRoutes() {
 		newPath := fmt.Sprintf("%s %s", r.GetMethod(), r.GetPath())
 		handler := r.GetHandler()
@@ -70,27 +88,27 @@ func (a *Application) LoadRoutes() {
 			handler = m.RunMiddleware(handler)
 		}
 
-		a.Server.HandleFunc(newPath, handler)
+		mux.HandleFunc(newPath, handler)
 	}
 }
 
-func (a *Application) UseDatabase(db DatabaseInterface) {
+func (a *Application) UseDatabase(db core.DatabaseInterface) {
 	if db.GetInstance() == nil {
 		panic("Error: Database intance return nil.")
 	}
 
-	a.Db = db.GetInstance()
+	a.Db = db
 }
 
-func (a *Application) UseHTTPServer(h HTTPServerInterface) {
+func (a *Application) UseHTTPServer(h core.HTTPServerInterface) {
 	if h.GetInstance() == nil {
 		panic("Error: HTTP Server instance return nil.")
 	}
 
-	a.Server = h.GetInstance()
+	a.Server = h
 }
 
-func (a *Application) AddFeature(f FeatureInterface) {
+func (a *Application) AddFeature(f core.FeatureInterface) {
 	a.Features = append(a.Features, f)
 }
 

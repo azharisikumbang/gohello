@@ -1,4 +1,4 @@
-package core
+package app
 
 import (
 	"database/sql"
@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	core "github.com/azharisikumbang/gohello/internal"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -44,7 +45,7 @@ func (m *MySQL) GetInstance() *sql.DB {
 	return db
 }
 
-func NewMySQL(cfg DBConfig) *MySQL {
+func NewMySQL(cfg core.DBConfig) *MySQL {
 	return &MySQL{
 		Host:     cfg.Host,
 		Username: cfg.Username,

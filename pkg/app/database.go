@@ -1,15 +1,17 @@
-package core
+package app
 
 import (
 	"database/sql"
 	"log"
+
+	core "github.com/azharisikumbang/gohello/internal"
 )
 
 type DatabaseServer struct {
-	cfg DBConfig
+	cfg core.DBConfig
 }
 
-func NewDatabaseServer(cfg DBConfig) DatabaseInterface {
+func NewDatabaseServer(cfg core.DBConfig) core.DatabaseInterface {
 	return &DatabaseServer{
 		cfg: cfg,
 	}
