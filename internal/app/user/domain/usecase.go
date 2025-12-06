@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	request "github.com/azharisikumbang/gohello/internal/user/http/requests"
-	"github.com/azharisikumbang/gohello/pkg/core"
+	core "github.com/azharisikumbang/gohello/internal"
+	request "github.com/azharisikumbang/gohello/internal/app/user/http/requests"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -36,13 +36,6 @@ func (s *UserService) All() ([]User, error) {
 }
 
 func (s *UserService) RegisterNewAccount(r *request.RegistrationRequest) error {
-	// create user account
-
-	exists, _ := s.Repo.FindByUsername(r.Username)
-	if exists != nil {
-		return errors.New("username already registered")
-	}
-
 	hashed, err := bcrypt.GenerateFromPassword([]byte(r.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return errors.New("failed to create user")

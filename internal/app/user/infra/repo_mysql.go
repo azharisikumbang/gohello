@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/azharisikumbang/gohello/internal/user/domain"
+	"github.com/azharisikumbang/gohello/internal/app/user/domain"
 )
 
 type MySQLUserRepository struct {
@@ -22,7 +22,7 @@ func (r *MySQLUserRepository) All() ([]domain.User, error) {
 	var users []domain.User
 
 	if r.DB == nil {
-		panic("Dtabase null")
+		panic("Database null")
 	}
 
 	rows, err := r.DB.Query("SELECT id, username from users")
